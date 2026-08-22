@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Registry — Policy Source Lookup (Demo)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #10141B;
+    --surface: #1A212C;
+    --surface-2: #212A37;
+    --line: #313B49;
+    --parchment: #EDE7D9;
+    --muted: #8D96A3;
+    --brass: #C08A3E;
+    --brass-soft: rgba(192,138,62,0.15);
+    --stamp-green: #6FA787;
+    --tag-hr: #5FA8A0;
+    --tag-fin: #C08A3E;
+    --tag-legal: #A07AC0;
+    --tag-it: #5C8FD6;
+    --tag-admin: #C77B7B;
+    --radius: 3px;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--parchment);
+    font-family:var(--sans);
+    min-height:100vh;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(192,138,62,0.05), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(95,168,160,0.04), transparent 40%);
+  }
+
+  .wrap{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 100px;
+  }
+
+  header{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }
+  .brand-eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--brass); margin:0 0 6px;
+  }
+  h1{
+    font-family:var(--serif); font-weight:700; font-size:34px; margin:0; letter-spacing:-0.01em;
+  }
+  .subtitle{ color:var(--muted); font-size:13.5px; margin-top:8px; max-width:480px; line-height:1.5;}
+  .demo-flag{
+    font-family:var(--mono); font-size:10.5px; color:var(--bg); background:var(--brass);
+    padding:5px 10px; border-radius:2px; letter-spacing:.06em; text-transform:uppercase;
+    white-space:nowrap; height:fit-content;
+  }
+
+  .search-box{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px;
+    display:flex; gap:6px;
+    margin-bottom: 16px;
+  }
+  .search-box input{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--parchment); font-family:var(--sans); font-size:15px;
+    padding: 12px 14px;
+  }
+  .search-box input::placeholder{ color: #5B6472; }
+  .search-box button{
+    font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--brass); color:#151A21; border:none; border-radius:2px;
+    padding: 0 22px; cursor:pointer; font-weight:600;
+    transition: filter .15s ease;
+  }
+  .search-box button:hover{ filter:brightness(1.08); }
+  .search-box button:disabled{ opacity:.5; cursor:default; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:40px; }
+  .chip{
+    font-family:var(--mono); font-size:11.5px; color:var(--muted);
+    border:1px solid var(--line); border-radius:20px; padding:6px 13px;
+    cursor:pointer; background:var(--surface); transition:.15s ease;
+  }
+  .chip:hover{ color:var(--parchment); border-color:var(--brass); }
+
+  #results{ display:flex; flex-direction:column; gap:22px; }
+
+  .query-echo{
+    font-family:var(--serif); font-style:italic; color:#B9C0CB; font-size:17px;
+    padding-left: 2px;
+  }
+  .query-echo span{ color:var(--parchment); font-style:normal; font-weight:600;}
+
+  /* Record card = the signature element: an index-card / dossier stamp */
+  .record{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    position:relative;
+    overflow:hidden;
+    animation: rise .38s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .record-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 20px;
+    border-bottom: 1px dashed var(--line);
+    background: var(--surface-2);
+  }
+  .conf{
+    display:flex; align-items:center; gap:8px;
+  }
+  .conf-dot{
+    width:8px; height:8px; border-radius:50%; background:var(--stamp-green);
+    box-shadow: 0 0 0 3px rgba(111,167,135,0.15);
+  }
+  .conf-label{ font-family:var(--mono); font-size:11px; color:var(--stamp-green); letter-spacing:.05em; text-transform:uppercase;}
+  .tag{
+    font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
+    padding: 4px 10px; border-radius:20px; color:#10141B; font-weight:600;
+  }
+
+  .record-body{ padding: 20px 20px 8px; }
+  .doc-title{
+    font-family:var(--serif); font-size:20px; font-weight:600; margin:0 0 4px; color:var(--parchment);
+  }
+  .doc-org{ color:var(--muted); font-size:13px; margin-bottom:18px;}
+
+  .meta-grid{
+    display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+    gap: 14px 24px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+  .meta-item .k{
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    color: var(--brass); margin-bottom:5px;
+  }
+  .meta-item .v{ font-family:var(--mono); font-size:13.5px; color:var(--parchment); word-break:break-word;}
+
+  .snippet{
+    font-size: 14px; line-height:1.65; color:#C7CDD5;
+    background: rgba(0,0,0,0.15);
+    border-left: 2px solid var(--brass);
+    padding: 12px 16px;
+    margin: 4px 0 18px;
+    border-radius: 0 2px 2px 0;
+  }
+  .snippet b{ color:var(--parchment); }
+
+  .path-trail{
+    font-family:var(--mono); font-size:11.5px; color:var(--muted);
+    padding: 12px 20px 18px;
+    border-top: 1px dashed var(--line);
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  }
+  .path-trail .seg{ color:var(--parchment); }
+  .path-trail .sep{ color:var(--brass); }
+
+  .no-match{
+    font-family:var(--serif); font-style:italic; color:var(--muted); font-size:15px;
+    padding: 30px 20px; text-align:center; border:1px dashed var(--line); border-radius:var(--radius);
+  }
+
+  footer{
+    margin-top: 60px; padding-top:20px; border-top:1px solid var(--line);
+    font-family:var(--mono); font-size:11px; color:#5B6472; text-align:center;
+  }
+
+  @media (max-width:560px){
+    h1{ font-size:26px; }
+    header{ flex-direction:column; align-items:flex-start; gap:14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="brand-eyebrow">Document Registry — Retrieval Agent</p>
+      <h1>Where's that policy?</h1>
+      <p class="subtitle">Ask in plain language. The agent points to the exact source: organization, file, category, and section — it doesn't just answer, it cites.</p>
+    </div>
+    <div class="demo-flag">Dummy / Test Data</div>
+  </header>
+
+  <div class="search-box">
+    <input id="queryInput" type="text" placeholder="e.g. where is the maternity policy?" autocomplete="off"/>
+    <button id="askBtn" onclick="runQuery()">Locate</button>
+  </div>
+  <div class="chips">
+    <div class="chip" onclick="fillAndRun('Where is the maternity policy?')">Maternity policy</div>
+    <div class="chip" onclick="fillAndRun('travel reimbursement limit')">Travel reimbursement</div>
+    <div class="chip" onclick="fillAndRun('data breach notification process')">Data breach process</div>
+    <div class="chip" onclick="fillAndRun('notice period for resignation')">Notice period</div>
+    <div class="chip" onclick="fillAndRun('expense approval workflow')">Expense approval</div>
+    <div class="chip" onclick="fillAndRun('work from home eligibility')">WFH eligibility</div>
+    <div class="chip" onclick="fillAndRun('salary credit date')">Salary credit date</div>
+    <div class="chip" onclick="fillAndRun('access revocation after offboarding')">Offboarding access</div>
+  </div>
+
+  <div id="results"></div>
+
+  <footer>REGISTRY DEMO · "Aarambh Technologies Pvt. Ltd." is a fictional company invented for this demo · every filename, section, clause, and policy detail is dummy/test data, not a real document</footer>
+</div>
+
+<script>
+// ---- Dummy document index (fabricated data, for demo purposes only) ----
+const INDEX = [
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    category: "HR",
+    section: "Section 4.2 — Leave & Time Off",
+    clause: "Clause 4.2.3 (Maternity & Parental Leave)",
+    page: "p. 31",
+    snippet: "Female employees are entitled to <b>26 weeks of paid maternity leave</b>, inclusive of prenatal leave, applicable from the date of confirmed employment onward.",
+    keywords: ["maternity","pregnan","parental leave","childbirth","paternity","leave policy for mothers"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    category: "HR",
+    section: "Section 6.1 — Separation & Exit",
+    clause: "Clause 6.1.1 (Resignation Notice)",
+    page: "p. 54",
+    snippet: "Employees below Senior Manager grade must serve a <b>notice period of 60 days</b>; grades above must serve 90 days unless mutually waived.",
+    keywords: ["notice period","resignation","exit process","last working day"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    category: "HR",
+    section: "Section 3.4 — Flexible Work",
+    clause: "Clause 3.4.2 (Remote Eligibility)",
+    page: "p. 22",
+    snippet: "Employees with over 6 months of tenure and no active PIP may apply for <b>hybrid or full remote status</b> via the WFH request portal.",
+    keywords: ["work from home","wfh","remote work","hybrid"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_Finance_Reimbursement_Guidelines_2025.pdf",
+    category: "Financial",
+    section: "Section 2.3 — Travel & Expense",
+    clause: "Clause 2.3.5 (Domestic Travel Caps)",
+    page: "p. 12",
+    snippet: "Domestic airfare is reimbursable up to <b>economy class fare only</b>; per-diem for Tier-1 cities is capped at ₹2,200/day.",
+    keywords: ["travel reimbursement","expense","per diem","airfare","travel limit"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_Finance_Reimbursement_Guidelines_2025.pdf",
+    category: "Financial",
+    section: "Section 3.1 — Approval Matrix",
+    clause: "Clause 3.1.2 (Expense Sign-off Thresholds)",
+    page: "p. 17",
+    snippet: "Expenses <b>above ₹25,000</b> require secondary approval from a Delivery Manager or Finance Controller before reimbursement is released.",
+    keywords: ["expense approval","approval workflow","sign-off","reimbursement approval"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_InfoSec_Incident_Response_Playbook.pdf",
+    category: "IT / Security",
+    section: "Section 5 — Breach Response",
+    clause: "Clause 5.2 (Notification Timeline)",
+    page: "p. 40",
+    snippet: "Confirmed data breaches involving personal data must be reported to the <b>CISO office within 4 hours</b> and to affected data principals within 72 hours.",
+    keywords: ["data breach","incident response","security breach","notification"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_Legal_Vendor_Contract_Template_Guide.docx",
+    category: "Legal",
+    section: "Section 1.4 — Termination Clauses",
+    clause: "Clause 1.4.1 (Standard Termination)",
+    page: "p. 8",
+    snippet: "Standard vendor agreements include a <b>30-day termination-for-convenience</b> clause unless a project-specific SOW overrides it.",
+    keywords: ["vendor contract","termination clause","legal template","contract exit"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    category: "HR",
+    section: "Section 4.5 — Bereavement & Special Leave",
+    clause: "Clause 4.5.1 (Bereavement Leave)",
+    page: "p. 35",
+    snippet: "Employees are entitled to <b>5 days of paid bereavement leave</b> for the death of an immediate family member.",
+    keywords: ["bereavement","special leave","death in family"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_Finance_Payroll_Policy_2025.pdf",
+    category: "Financial",
+    section: "Section 1.2 — Payroll Cycle",
+    clause: "Clause 1.2.4 (Salary Disbursement Date)",
+    page: "p. 6",
+    snippet: "Salaries are credited on the <b>last working day of each month</b>; any delay beyond 3 working days must be flagged to Payroll Ops.",
+    keywords: ["salary date","payroll cycle","salary credit","payday"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_IT_Access_Control_Standard.pdf",
+    category: "IT / Security",
+    section: "Section 2.1 — Access Provisioning",
+    clause: "Clause 2.1.3 (Offboarding Access Revocation)",
+    page: "p. 9",
+    snippet: "All system access must be <b>revoked within 2 hours</b> of an employee's last working day, confirmed by IT Security sign-off.",
+    keywords: ["access revocation","offboarding it","system access","account deactivation"],
+  },
+  {
+    org: "Aarambh Technologies Pvt. Ltd.",
+    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    category: "HR",
+    section: "Section 2.2 — Code of Conduct",
+    clause: "Clause 2.2.5 (Anti-Harassment)",
+    page: "p. 14",
+    snippet: "Complaints of workplace harassment must be filed with the <b>Internal Committee (IC) within 90 days</b> of the incident, per the POSH framework.",
+    keywords: ["harassment","posh","internal committee","workplace complaint"],
+  },
+];
+
+function fillAndRun(q){
+  document.getElementById('queryInput').value = q;
+  runQuery();
+}
+
+document.getElementById('queryInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') runQuery();
+});
+
+function scoreDoc(doc, q){
+  let score = 0;
+  const qLower = q.toLowerCase();
+  doc.keywords.forEach(k=>{
+    if(qLower.includes(k)) score += k.length; // longer/more specific match wins
+  });
+  return score;
+}
+
+function tagColor(cat){
+  if(cat === 'HR') return 'var(--tag-hr)';
+  if(cat === 'Financial') return 'var(--tag-fin)';
+  if(cat === 'Legal') return 'var(--tag-legal)';
+  if(cat.includes('IT')) return 'var(--tag-it)';
+  return 'var(--tag-admin)';
+}
+
+function runQuery(){
+  const q = document.getElementById('queryInput').value.trim();
+  const resultsEl = document.getElementById('results');
+  if(!q){ return; }
+
+  const scored = INDEX.map(d => ({doc:d, score: scoreDoc(d,q)}))
+                       .filter(x => x.score > 0)
+                       .sort((a,b)=> b.score - a.score);
+
+  const echo = document.createElement('div');
+  echo.className = 'query-echo';
+  echo.innerHTML = `Query — <span>"${escapeHtml(q)}"</span>`;
+  resultsEl.prepend(echo);
+
+  if(scored.length === 0){
+    const noMatch = document.createElement('div');
+    noMatch.className = 'no-match';
+    noMatch.textContent = 'No indexed source matched this query. In a live build, this is where the agent would say so explicitly rather than guessing.';
+    resultsEl.insertBefore(noMatch, echo.nextSibling);
+    return;
+  }
+
+  const top = scored[0].doc;
+  const card = buildCard(top);
+  resultsEl.insertBefore(card, echo.nextSibling);
+}
+
+function buildCard(doc){
+  const card = document.createElement('div');
+  card.className = 'record';
+  card.innerHTML = `
+    <div class="record-head">
+      <div class="conf">
+        <div class="conf-dot"></div>
+        <div class="conf-label">Source located</div>
+      </div>
+      <div class="tag" style="background:${tagColor(doc.category)}">${doc.category}</div>
+    </div>
+    <div class="record-body">
+      <p class="doc-title">${doc.filename}</p>
+      <p class="doc-org">${doc.org} &middot; Policy Repository</p>
+
+      <div class="snippet">${doc.snippet}</div>
+
+      <div class="meta-grid">
+        <div class="meta-item"><div class="k">Organization</div><div class="v">${doc.org}</div></div>
+        <div class="meta-item"><div class="k">File name</div><div class="v">${doc.filename}</div></div>
+        <div class="meta-item"><div class="k">Category</div><div class="v">${doc.category}</div></div>
+        <div class="meta-item"><div class="k">Section</div><div class="v">${doc.section}</div></div>
+        <div class="meta-item"><div class="k">Clause</div><div class="v">${doc.clause}</div></div>
+        <div class="meta-item"><div class="k">Page ref.</div><div class="v">${doc.page}</div></div>
+      </div>
+    </div>
+    <div class="path-trail">
+      <span class="seg">${doc.org}</span><span class="sep">/</span><span class="seg">${doc.category}</span><span class="sep">/</span><span class="seg">${doc.filename}</span><span class="sep">/</span><span class="seg">${doc.section}</span>
+    </div>
+  `;
+  return card;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Auto-run the maternity example on load so the page isn't empty
+window.addEventListener('DOMContentLoaded', ()=>{
+  fillAndRun('Where is the maternity policy?');
+});
+</script>
+</body>
+</html>
