@@ -156,6 +156,8 @@
     color: var(--brass); margin-bottom:5px;
   }
   .meta-item .v{ font-family:var(--mono); font-size:13.5px; color:var(--parchment); word-break:break-word;}
+  .meta-item .v a.link{ color:var(--brass); text-decoration:none; border-bottom:1px dashed var(--brass); }
+  .meta-item .v a.link:hover{ color:var(--parchment); border-color:var(--parchment); }
 
   .snippet{
     font-size: 14px; line-height:1.65; color:#C7CDD5;
@@ -221,119 +223,120 @@
 
   <div id="results"></div>
 
-  <footer>REGISTRY DEMO · "Aarambh Technologies Pvt. Ltd." is a fictional company invented for this demo · every filename, section, clause, and policy detail is dummy/test data, not a real document</footer>
+  <footer>REGISTRY DEMO · "Aarambh Technologies Pvt. Ltd." is a fictional company invented for this demo · every link, section, clause, and policy detail is dummy/test data — the intranet URLs are illustrative and not live</footer>
 </div>
 
 <script>
 // ---- Dummy document index (fabricated data, for demo purposes only) ----
+// "url" simulates a page on the company's internal policy portal, not a real live site.
 const INDEX = [
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/hr/leave/maternity-parental-leave",
     category: "HR",
-    section: "Section 4.2 — Leave & Time Off",
-    clause: "Clause 4.2.3 (Maternity & Parental Leave)",
-    page: "p. 31",
+    section: "Leave & Time Off",
+    clause: "Maternity & Parental Leave",
     snippet: "Female employees are entitled to <b>26 weeks of paid maternity leave</b>, inclusive of prenatal leave, applicable from the date of confirmed employment onward.",
     keywords: ["maternity","pregnan","parental leave","childbirth","paternity","leave policy for mothers"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/hr/separation/resignation-notice",
     category: "HR",
-    section: "Section 6.1 — Separation & Exit",
-    clause: "Clause 6.1.1 (Resignation Notice)",
-    page: "p. 54",
+    section: "Separation & Exit",
+    clause: "Resignation Notice",
     snippet: "Employees below Senior Manager grade must serve a <b>notice period of 60 days</b>; grades above must serve 90 days unless mutually waived.",
     keywords: ["notice period","resignation","exit process","last working day"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/hr/flexible-work/remote-eligibility",
     category: "HR",
-    section: "Section 3.4 — Flexible Work",
-    clause: "Clause 3.4.2 (Remote Eligibility)",
-    page: "p. 22",
+    section: "Flexible Work",
+    clause: "Remote Eligibility",
     snippet: "Employees with over 6 months of tenure and no active PIP may apply for <b>hybrid or full remote status</b> via the WFH request portal.",
     keywords: ["work from home","wfh","remote work","hybrid"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_Finance_Reimbursement_Guidelines_2025.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/finance/travel-expense/domestic-travel-caps",
     category: "Financial",
-    section: "Section 2.3 — Travel & Expense",
-    clause: "Clause 2.3.5 (Domestic Travel Caps)",
-    page: "p. 12",
+    section: "Travel & Expense",
+    clause: "Domestic Travel Caps",
     snippet: "Domestic airfare is reimbursable up to <b>economy class fare only</b>; per-diem for Tier-1 cities is capped at ₹2,200/day.",
     keywords: ["travel reimbursement","expense","per diem","airfare","travel limit"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_Finance_Reimbursement_Guidelines_2025.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/finance/approvals/expense-sign-off-thresholds",
     category: "Financial",
-    section: "Section 3.1 — Approval Matrix",
-    clause: "Clause 3.1.2 (Expense Sign-off Thresholds)",
-    page: "p. 17",
+    section: "Approval Matrix",
+    clause: "Expense Sign-off Thresholds",
     snippet: "Expenses <b>above ₹25,000</b> require secondary approval from a Delivery Manager or Finance Controller before reimbursement is released.",
     keywords: ["expense approval","approval workflow","sign-off","reimbursement approval"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_InfoSec_Incident_Response_Playbook.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/it-security/incident-response/breach-notification-timeline",
     category: "IT / Security",
-    section: "Section 5 — Breach Response",
-    clause: "Clause 5.2 (Notification Timeline)",
-    page: "p. 40",
+    section: "Breach Response",
+    clause: "Notification Timeline",
     snippet: "Confirmed data breaches involving personal data must be reported to the <b>CISO office within 4 hours</b> and to affected data principals within 72 hours.",
     keywords: ["data breach","incident response","security breach","notification"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_Legal_Vendor_Contract_Template_Guide.docx",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/legal/vendor-contracts/standard-termination-clause",
     category: "Legal",
-    section: "Section 1.4 — Termination Clauses",
-    clause: "Clause 1.4.1 (Standard Termination)",
-    page: "p. 8",
+    section: "Termination Clauses",
+    clause: "Standard Termination",
     snippet: "Standard vendor agreements include a <b>30-day termination-for-convenience</b> clause unless a project-specific SOW overrides it.",
     keywords: ["vendor contract","termination clause","legal template","contract exit"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/hr/leave/bereavement-leave",
     category: "HR",
-    section: "Section 4.5 — Bereavement & Special Leave",
-    clause: "Clause 4.5.1 (Bereavement Leave)",
-    page: "p. 35",
+    section: "Bereavement & Special Leave",
+    clause: "Bereavement Leave",
     snippet: "Employees are entitled to <b>5 days of paid bereavement leave</b> for the death of an immediate family member.",
     keywords: ["bereavement","special leave","death in family"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_Finance_Payroll_Policy_2025.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/finance/payroll/salary-disbursement-date",
     category: "Financial",
-    section: "Section 1.2 — Payroll Cycle",
-    clause: "Clause 1.2.4 (Salary Disbursement Date)",
-    page: "p. 6",
+    section: "Payroll Cycle",
+    clause: "Salary Disbursement Date",
     snippet: "Salaries are credited on the <b>last working day of each month</b>; any delay beyond 3 working days must be flagged to Payroll Ops.",
     keywords: ["salary date","payroll cycle","salary credit","payday"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_IT_Access_Control_Standard.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/it-security/access-control/offboarding-access-revocation",
     category: "IT / Security",
-    section: "Section 2.1 — Access Provisioning",
-    clause: "Clause 2.1.3 (Offboarding Access Revocation)",
-    page: "p. 9",
+    section: "Access Provisioning",
+    clause: "Offboarding Access Revocation",
     snippet: "All system access must be <b>revoked within 2 hours</b> of an employee's last working day, confirmed by IT Security sign-off.",
     keywords: ["access revocation","offboarding it","system access","account deactivation"],
   },
   {
     org: "Aarambh Technologies Pvt. Ltd.",
-    filename: "Aarambh_HR_Policy_Manual_v7.2.pdf",
+    site: "policies.aarambh-intranet.com",
+    url: "https://policies.aarambh-intranet.com/hr/code-of-conduct/anti-harassment",
     category: "HR",
-    section: "Section 2.2 — Code of Conduct",
-    clause: "Clause 2.2.5 (Anti-Harassment)",
-    page: "p. 14",
+    section: "Code of Conduct",
+    clause: "Anti-Harassment (POSH)",
     snippet: "Complaints of workplace harassment must be filed with the <b>Internal Committee (IC) within 90 days</b> of the incident, per the POSH framework.",
     keywords: ["harassment","posh","internal committee","workplace complaint"],
   },
@@ -404,22 +407,21 @@ function buildCard(doc){
       <div class="tag" style="background:${tagColor(doc.category)}">${doc.category}</div>
     </div>
     <div class="record-body">
-      <p class="doc-title">${doc.filename}</p>
-      <p class="doc-org">${doc.org} &middot; Policy Repository</p>
+      <p class="doc-title">${doc.clause}</p>
+      <p class="doc-org">${doc.org} &middot; Policy Portal</p>
 
       <div class="snippet">${doc.snippet}</div>
 
       <div class="meta-grid">
         <div class="meta-item"><div class="k">Organization</div><div class="v">${doc.org}</div></div>
-        <div class="meta-item"><div class="k">File name</div><div class="v">${doc.filename}</div></div>
         <div class="meta-item"><div class="k">Category</div><div class="v">${doc.category}</div></div>
         <div class="meta-item"><div class="k">Section</div><div class="v">${doc.section}</div></div>
         <div class="meta-item"><div class="k">Clause</div><div class="v">${doc.clause}</div></div>
-        <div class="meta-item"><div class="k">Page ref.</div><div class="v">${doc.page}</div></div>
+        <div class="meta-item"><div class="k">Page link</div><div class="v"><a class="link" href="${doc.url}" target="_blank" rel="noopener">${doc.site}${doc.url.replace('https://'+doc.site,'')}</a></div></div>
       </div>
     </div>
     <div class="path-trail">
-      <span class="seg">${doc.org}</span><span class="sep">/</span><span class="seg">${doc.category}</span><span class="sep">/</span><span class="seg">${doc.filename}</span><span class="sep">/</span><span class="seg">${doc.section}</span>
+      <span class="seg">${doc.org}</span><span class="sep">/</span><span class="seg">${doc.category}</span><span class="sep">/</span><span class="seg">${doc.section}</span><span class="sep">/</span><span class="seg">${doc.clause}</span>
     </div>
   `;
   return card;
